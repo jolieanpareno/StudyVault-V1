@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "424374236783",
+    "firebase_url": "https://studyvault-f884f-default-rtdb.firebaseio.com",
+    "project_id": "studyvault-f884f",
+    "storage_bucket": "studyvault-f884f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:424374236783:android:68024744b399743b07bf9a",
+        "android_client_info": {
+          "package_name": "com.example.studyvault_final_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDmuWD9zKstsnc6cSboHIyBvHvVm2MTr1E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:424374236783:android:2da52a00f95d4b3907bf9a",
+        "android_client_info": {
+          "package_name": "com.example.studyvaulyv2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDmuWD9zKstsnc6cSboHIyBvHvVm2MTr1E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
