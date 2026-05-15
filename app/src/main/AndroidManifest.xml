@@ -33,7 +33,7 @@
         <activity android:name=".Quiz" />
         <activity android:name=".Quiz_Result" />
         <activity android:name=".Edit_Profile" />
-        <activity android:name=".Iterm_Study_Set" />
+        <activity android:name=".Item_Study_Set" />
         <activity android:name=".MainActivity" />
 
     </application>
