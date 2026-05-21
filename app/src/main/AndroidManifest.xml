@@ -35,6 +35,7 @@
         <activity android:name=".Edit_Profile" />
         <activity android:name=".Item_Study_Set" />
         <activity android:name=".MainActivity" />
+        <activity android:name=".ForgotPassword" />
 
     </application>
 

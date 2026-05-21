@@ -22,18 +22,16 @@ import java.util.concurrent.Executors;
 
 public class CreateFragment extends Fragment {
 
-    private EditText etTitle, etDescription, etAiInput;
+    private EditText etTitle, etDescription, etAiInput, etCardCount;
     private LinearLayout cardContainer;
     private Button btnSave, btnGenerateAi;
     private ProgressBar aiProgressBar;
-    private RadioGroup rgCardCount;
     private final List<View> cardViews = new ArrayList<>();
     private LayoutInflater myInflater;
 
-    private static final String GROQ_API_KEY = "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";
-    private static final String GROQ_URL     = "https://api.groq.com/openai/v1/chat/completions";
-    private static final String GROQ_MODEL   = "llama-3.1-8b-instant";
-    private static final int    DAILY_AI_LIMIT = 5;
+    private static final String GROQ_URL      = "https://api.groq.com/openai/v1/chat/completions";
+    private static final String GROQ_MODEL    = "llama-3.1-8b-instant";
+    private static final int    DAILY_AI_LIMIT = 10;
 
     private final ExecutorService executor    = Executors.newSingleThreadExecutor();
     private final Handler         mainHandler = new Handler(Looper.getMainLooper());
@@ -45,12 +43,12 @@ public class CreateFragment extends Fragment {
         myInflater = inflater;
 
         etAiInput     = view.findViewById(R.id.etAiInput);
+        etCardCount   = view.findViewById(R.id.etCardCount);
         btnGenerateAi = view.findViewById(R.id.btnGenerateAi);
         aiProgressBar = view.findViewById(R.id.aiProgressBar);
         etTitle       = view.findViewById(R.id.etTitle);
         etDescription = view.findViewById(R.id.etDescription);
         cardContainer = view.findViewById(R.id.cardContainer);
-        rgCardCount   = view.findViewById(R.id.rgCardCount);
         Button btnAddCard = view.findViewById(R.id.btnAddCard);
         btnSave       = view.findViewById(R.id.btnSave);
 
@@ -62,13 +60,25 @@ public class CreateFragment extends Fragment {
         return view;
     }
 
-    /** Read the selected RadioButton to get how many cards to generate */
+    /** Read the typed number from etCardCount; returns -1 if invalid */
     private int getSelectedCardCount() {
-        int selectedId = rgCardCount.getCheckedRadioButtonId();
-        if (selectedId == R.id.rb10) return 10;
-        if (selectedId == R.id.rb15) return 15;
-        if (selectedId == R.id.rb20) return 20;
-        return 5; // default
+        String raw = etCardCount.getText().toString().trim();
+        if (raw.isEmpty()) {
+            toast("Please enter how many flashcards to generate.");
+            return -1;
+        }
+        int count;
+        try {
+            count = Integer.parseInt(raw);
+        } catch (NumberFormatException e) {
+            toast("Please enter a valid number.");
+            return -1;
+        }
+        if (count < 1 || count > 50) {
+            toast("Please enter a number between 1 and 50.");
+            return -1;
+        }
+        return count;
     }
 
     private void generateWithAi() {
@@ -77,6 +87,9 @@ public class CreateFragment extends Fragment {
             toast("Please paste some notes first!");
             return;
         }
+
+        int cardCount = getSelectedCardCount();
+        if (cardCount == -1) return;
 
         String uid = FirebaseHelper.getCurrentUserId();
         if (uid == null) {
@@ -87,6 +100,7 @@ public class CreateFragment extends Fragment {
         DocumentReference userRef = FirebaseFirestore.getInstance()
                 .collection("users").document(uid);
 
+        final int finalCardCount = cardCount;
         userRef.get().addOnSuccessListener(doc -> {
             if (!isAdded()) return;
             String today = todayString();
@@ -96,11 +110,11 @@ public class CreateFragment extends Fragment {
                 count = c != null ? c : 0;
             }
             if (count >= DAILY_AI_LIMIT) {
-                toast("Daily AI limit reached (5/5). Try again tomorrow!");
+                toast("Daily AI limit reached (10/10). Try again tomorrow!");
             } else {
-                callGroqApi(input, userRef, today, count, getSelectedCardCount());
+                callGroqApi(input, userRef, today, count, finalCardCount);
             }
-        }).addOnFailureListener(e -> callGroqApi(input, userRef, todayString(), 0, getSelectedCardCount()));
+        }).addOnFailureListener(e -> callGroqApi(input, userRef, todayString(), 0, finalCardCount));
     }
 
     private void callGroqApi(String notes, DocumentReference userRef,
@@ -129,7 +143,7 @@ public class CreateFragment extends Fragment {
                 HttpURLConnection conn = (HttpURLConnection) new URL(GROQ_URL).openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json");
-                conn.setRequestProperty("Authorization", "Bearer " + GROQ_API_KEY);
+                conn.setRequestProperty("Authorization", "Bearer " + BuildConfig.GROQ_API_KEY);
                 conn.setDoOutput(true);
                 conn.setConnectTimeout(15000);
                 conn.setReadTimeout(20000);
@@ -217,7 +231,7 @@ public class CreateFragment extends Fragment {
         View cardView = myInflater.inflate(R.layout.activity_item_card_input, cardContainer, false);
         ((EditText) cardView.findViewById(R.id.etQuestion)).setText(question);
         ((EditText) cardView.findViewById(R.id.etAnswer)).setText(answer);
-        ((TextView) cardView.findViewById(R.id.tvCardNumber)).setText("Card " + (cardViews.size() + 1));
+        ((TextView) cardView.findViewById(R.id.tvCardNumber)).setText(String.format(Locale.getDefault(), "Card %d", cardViews.size() + 1));
         cardView.findViewById(R.id.btnRemoveCard).setOnClickListener(v -> {
             cardContainer.removeView(cardView);
             cardViews.remove(cardView);
@@ -229,7 +243,7 @@ public class CreateFragment extends Fragment {
 
     private void addCardView() {
         View cardView = myInflater.inflate(R.layout.activity_item_card_input, cardContainer, false);
-        ((TextView) cardView.findViewById(R.id.tvCardNumber)).setText("Card " + (cardViews.size() + 1));
+        ((TextView) cardView.findViewById(R.id.tvCardNumber)).setText(String.format(Locale.getDefault(), "Card %d", cardViews.size() + 1));
         cardView.findViewById(R.id.btnRemoveCard).setOnClickListener(v -> {
             cardContainer.removeView(cardView);
             cardViews.remove(cardView);
@@ -242,7 +256,7 @@ public class CreateFragment extends Fragment {
     private void renumberCards() {
         for (int i = 0; i < cardViews.size(); i++) {
             ((TextView) cardViews.get(i).findViewById(R.id.tvCardNumber))
-                    .setText("Card " + (i + 1));
+                    .setText(String.format(Locale.getDefault(), "Card %d", i + 1));
         }
     }
 
@@ -264,7 +278,7 @@ public class CreateFragment extends Fragment {
         if (cards.isEmpty()) { toast("Add at least one complete card"); return; }
 
         btnSave.setEnabled(false);
-        btnSave.setText("Saving...");
+        btnSave.setText(R.string.saving);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference ref = db.collection("studySets").document();
@@ -286,6 +300,13 @@ public class CreateFragment extends Fragment {
                         if (!isAdded()) return;
                         toast("Saved to Vault! 🎉");
                         clearScreen();
+                        // Navigate to the Vault tab and trigger a refresh
+                        if (getActivity() != null) {
+                            VaultFragment.pendingRefresh = true;
+                            com.google.android.material.bottomnavigation.BottomNavigationView nav =
+                                    getActivity().findViewById(R.id.bottomNavigationView);
+                            if (nav != null) nav.setSelectedItemId(R.id.Vault);
+                        }
                     })
                     .addOnFailureListener(e -> resetSaveButton(e.getMessage()));
         }).addOnFailureListener(e -> resetSaveButton(e.getMessage()));
@@ -295,18 +316,18 @@ public class CreateFragment extends Fragment {
         etTitle.setText("");
         etDescription.setText("");
         etAiInput.setText("");
-        rgCardCount.check(R.id.rb5);
+        etCardCount.setText("");
         cardContainer.removeAllViews();
         cardViews.clear();
         addCardView();
         btnSave.setEnabled(true);
-        btnSave.setText("Save Study Set");
+        btnSave.setText(R.string.save_study_set);
     }
 
     private void resetSaveButton(String error) {
         if (!isAdded()) return;
         btnSave.setEnabled(true);
-        btnSave.setText("Save Study Set");
+        btnSave.setText(R.string.save_study_set);
         toast("Error: " + error);
     }
 

@@ -11,6 +11,9 @@ public class Sets extends AppCompatActivity {
 
     private String setId, setTitle;
     private int totalCards = 0;
+    private int selectedCount = 10; // default
+
+    private TextView tvCardCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,14 +23,19 @@ public class Sets extends AppCompatActivity {
         setId    = getIntent().getStringExtra("setId");
         setTitle = getIntent().getStringExtra("setTitle");
 
-        TextView tvTitle    = findViewById(R.id.tvSetTitle);
-        TextView tvDesc     = findViewById(R.id.tvSetDescription);
-        Button btnFlash     = findViewById(R.id.btnFlashcards);
-        Button btnQuiz      = findViewById(R.id.btnQuiz);
-        ImageButton btnBack = findViewById(R.id.btnBack);
+        TextView tvTitle      = findViewById(R.id.tvSetTitle);
+        TextView tvDesc       = findViewById(R.id.tvSetDescription);
+        Button btnFlash       = findViewById(R.id.btnFlashcards);
+        Button btnQuiz        = findViewById(R.id.btnQuiz);
+        ImageButton btnBack   = findViewById(R.id.btnBack);
         ImageButton btnDelete = findViewById(R.id.btnDelete);
+        Button btnMinus       = findViewById(R.id.btnMinus);
+        Button btnPlus        = findViewById(R.id.btnPlus);
+        Button btnAll         = findViewById(R.id.btnAll);
+        tvCardCount           = findViewById(R.id.tvCardCount);
 
         tvTitle.setText(setTitle);
+        updateCountDisplay();
 
         // Load description + card count from Firestore
         FirebaseFirestore.getInstance()
@@ -37,12 +45,43 @@ public class Sets extends AppCompatActivity {
                     tvDesc.setText(desc != null && !desc.isEmpty() ? desc : "No description");
                     Long count = doc.getLong("cardCount");
                     totalCards = count != null ? count.intValue() : 0;
+                    // Clamp selectedCount to totalCards if needed
+                    if (totalCards > 0 && selectedCount > totalCards) {
+                        selectedCount = totalCards;
+                        updateCountDisplay();
+                    }
                 });
 
         btnBack.setOnClickListener(v -> finish());
 
-        btnFlash.setOnClickListener(v -> showCountPicker(false));
-        btnQuiz.setOnClickListener(v -> showCountPicker(true));
+        btnMinus.setOnClickListener(v -> {
+            if (selectedCount > 1) {
+                selectedCount--;
+                updateCountDisplay();
+            }
+        });
+
+        btnPlus.setOnClickListener(v -> {
+            int max = totalCards > 0 ? totalCards : 999;
+            if (selectedCount < max) {
+                selectedCount++;
+                updateCountDisplay();
+            } else {
+                toast("That's all the cards in this set!");
+            }
+        });
+
+        btnAll.setOnClickListener(v -> {
+            if (totalCards > 0) {
+                selectedCount = totalCards;
+                updateCountDisplay();
+            } else {
+                toast("Card count not loaded yet, try again.");
+            }
+        });
+
+        btnFlash.setOnClickListener(v -> launchMode(false));
+        btnQuiz.setOnClickListener(v  -> launchMode(true));
 
         btnDelete.setOnClickListener(v ->
                 new android.app.AlertDialog.Builder(this)
@@ -53,43 +92,22 @@ public class Sets extends AppCompatActivity {
                         .show());
     }
 
-    private void showCountPicker(boolean isQuiz) {
-        String type = isQuiz ? "questions" : "cards";
-        List<String> options = new ArrayList<>();
-        List<Integer> counts = new ArrayList<>();
-
-        // Only show options that fit within the actual card count
-        if (totalCards == 0 || totalCards >= 5)  { options.add("5 " + type);  counts.add(5); }
-        if (totalCards == 0 || totalCards >= 10) { options.add("10 " + type); counts.add(10); }
-        if (totalCards == 0 || totalCards >= 15) { options.add("15 " + type); counts.add(15); }
-        if (totalCards == 0 || totalCards >= 20) { options.add("20 " + type); counts.add(20); }
-
-        // Always add "All" option
-        String allLabel = totalCards > 0 ? "All " + totalCards + " " + type : "All " + type;
-        options.add(allLabel);
-        counts.add(totalCards > 0 ? totalCards : -1);
-
-        new android.app.AlertDialog.Builder(this)
-                .setTitle("How many " + type + "?")
-                .setItems(options.toArray(new String[0]), (dialog, which) -> {
-                    int chosen = counts.get(which);
-                    launchMode(isQuiz, chosen);
-                })
-                .show();
+    private void updateCountDisplay() {
+        tvCardCount.setText(String.valueOf(selectedCount));
     }
 
-    private void launchMode(boolean isQuiz, int count) {
+    private void launchMode(boolean isQuiz) {
+        if (totalCards > 0 && selectedCount > totalCards) {
+            toast("You only have " + totalCards + " cards in this set.");
+            return;
+        }
         Intent intent = new Intent(this, isQuiz ? Quiz.class : Flashcards.class);
         intent.putExtra("setId",     setId);
         intent.putExtra("setTitle",  setTitle);
-        intent.putExtra("cardCount", count);
+        intent.putExtra("cardCount", selectedCount);
         startActivity(intent);
     }
 
-    /**
-     * Deletes flashcards subcollection, then quizQuestions subcollection,
-     * then the parent document — in that order to avoid orphaned data.
-     */
     private void deleteSetCompletely(String setId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference setRef = db.collection("studySets").document(setId);

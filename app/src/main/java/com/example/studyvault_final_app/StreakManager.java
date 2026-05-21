@@ -18,26 +18,32 @@ public class StreakManager {
     private String userId;
 
     public StreakManager(Context context) {
-        // Get the currently logged-in Firebase user's ID
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         this.userId = (user != null) ? user.getUid() : "guest";
-
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
     }
 
+    /**
+     * Call this whenever the user studies (e.g. opens a set, flips a card).
+     * - Same day → no-op (streak already counted today)
+     * - Consecutive day → increment streak
+     * - Gap of 2+ days → reset streak to 1
+     */
     public void recordStudySession() {
         String today = getTodayDate();
-        // Each key is now unique per user
         String lastDate = prefs.getString(userId + "_last_date", "");
         int streak = prefs.getInt(userId + "_streak", 0);
 
+        // Already recorded today — nothing to do
         if (today.equals(lastDate)) return;
 
         String yesterday = getYesterdayDate();
 
         if (lastDate.equals(yesterday)) {
+            // Studied yesterday → keep the chain going
             streak += 1;
         } else {
+            // Skipped at least one day (or very first session) → reset
             streak = 1;
         }
 
@@ -47,10 +53,36 @@ public class StreakManager {
                 .apply();
     }
 
+    /**
+     * Returns the current streak, but first checks whether it has expired
+     * (i.e. the user didn't study yesterday or today). This ensures the UI
+     * always shows 0 after a missed day even if recordStudySession() wasn't
+     * called yet.
+     */
     public int getStreak() {
+        // Re-resolve userId in case auth state changed
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         this.userId = (user != null) ? user.getUid() : "guest";
-        return prefs.getInt(userId + "_streak", 0);
+
+        String lastDate = prefs.getString(userId + "_last_date", "");
+        int streak = prefs.getInt(userId + "_streak", 0);
+
+        // If there's no recorded session yet, streak is 0
+        if (lastDate.isEmpty()) return 0;
+
+        String today = getTodayDate();
+        String yesterday = getYesterdayDate();
+
+        // Streak is still alive if the last session was today or yesterday
+        if (lastDate.equals(today) || lastDate.equals(yesterday)) {
+            return streak;
+        }
+
+        // Missed more than one day — expire the streak
+        prefs.edit()
+                .putInt(userId + "_streak", 0)
+                .apply();
+        return 0;
     }
 
     private String getTodayDate() {

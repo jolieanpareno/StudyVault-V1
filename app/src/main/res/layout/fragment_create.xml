@@ -8,111 +8,82 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="32dp">
 
+        <!-- Screen label -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="AI Study Generator"
-            android:textColor="#7F77DD"
-            android:textSize="22sp"
+            android:text="CREATE — AI GENERATOR"
+            android:textColor="#3D5570"
+            android:textSize="11sp"
+            android:letterSpacing="0.12"
             android:textStyle="bold"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp"/>
+            android:paddingTop="24dp"
+            android:paddingBottom="20dp"/>
+
+        <!-- AI section header -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AI Generator"
+            android:textColor="#7F77DD"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="6dp"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Paste your notes below to generate flashcards instantly."
-            android:textColor="#8899AA"
-            android:textSize="13sp"
-            android:layout_marginBottom="16dp"/>
+            android:text="Paste notes, get flashcards instantly"
+            android:textColor="#5A7A9A"
+            android:textSize="14sp"
+            android:layout_marginBottom="20dp"/>
 
         <!-- AI Input -->
         <EditText
             android:id="@+id/etAiInput"
             android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:hint="Paste textbook text, notes, or a topic here..."
-            android:textColorHint="#556070"
+            android:layout_height="130dp"
+            android:hint="Paste textbook text or notes here..."
+            android:textColorHint="#3D5570"
             android:textColor="#FFFFFF"
-            android:padding="16dp"
+            android:textSize="14sp"
+            android:padding="18dp"
             android:gravity="top"
             android:background="@drawable/input_background"
             android:layout_marginBottom="12dp"/>
 
-        <!-- How many cards to generate -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="How many flashcards?"
-            android:textColor="#AABBCC"
-            android:textSize="13sp"
-            android:layout_marginBottom="8dp"/>
-
-        <RadioGroup
-            android:id="@+id/rgCardCount"
+        <!-- Card count -->
+        <EditText
+            android:id="@+id/etCardCount"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
-
-            <RadioButton
-                android:id="@+id/rb5"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
-                android:text="5"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:gravity="center"
-                android:buttonTint="#7F77DD"
-                android:checked="true"/>
-
-            <RadioButton
-                android:id="@+id/rb10"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
-                android:text="10"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:gravity="center"
-                android:buttonTint="#7F77DD"/>
-
-            <RadioButton
-                android:id="@+id/rb15"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
-                android:text="15"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:gravity="center"
-                android:buttonTint="#7F77DD"/>
-
-            <RadioButton
-                android:id="@+id/rb20"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
-                android:text="20"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:gravity="center"
-                android:buttonTint="#7F77DD"/>
-
-        </RadioGroup>
+            android:layout_height="56dp"
+            android:hint="How many cards? (e.g. 10)"
+            android:textColorHint="#3D5570"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:inputType="number"
+            android:background="@drawable/input_background"
+            android:layout_marginBottom="14dp"/>
 
         <Button
             android:id="@+id/btnGenerateAi"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:text="✨ Generate Flashcards"
+            android:layout_height="56dp"
+            android:text="✨  Generate Flashcards"
             android:textColor="#FFFFFF"
+            android:textSize="15sp"
             android:textStyle="bold"
+            android:textAllCaps="false"
             android:backgroundTint="#7F77DD"
-            android:layout_marginBottom="12dp"/>
+            android:layout_marginBottom="14dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"/>
 
         <ProgressBar
             android:id="@+id/aiProgressBar"
@@ -122,11 +93,13 @@
             android:visibility="gone"
             android:layout_marginBottom="20dp"/>
 
+        <!-- Divider -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="#162032"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="28dp"/>
 
         <!-- Manual Section -->
         <TextView
@@ -134,31 +107,34 @@
             android:layout_height="wrap_content"
             android:text="Study Set Details"
             android:textColor="#FFFFFF"
-            android:textSize="18sp"
+            android:textSize="20sp"
             android:textStyle="bold"
-            android:layout_marginBottom="12dp"/>
+            android:layout_marginBottom="16dp"/>
 
         <EditText
             android:id="@+id/etTitle"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
+            android:layout_height="56dp"
             android:hint="Title"
-            android:textColorHint="#556070"
+            android:textColorHint="#3D5570"
             android:textColor="#FFFFFF"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
+            android:textSize="15sp"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
             android:background="@drawable/input_background"
             android:layout_marginBottom="12dp"/>
 
         <EditText
             android:id="@+id/etDescription"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="88dp"
             android:hint="Description (optional)"
-            android:textColorHint="#556070"
+            android:textColorHint="#3D5570"
             android:textColor="#FFFFFF"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
+            android:textSize="14sp"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:paddingTop="14dp"
             android:gravity="top"
             android:background="@drawable/input_background"
             android:layout_marginBottom="20dp"/>
@@ -172,22 +148,30 @@
         <Button
             android:id="@+id/btnAddCard"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:text="+ Add Card Manually"
+            android:layout_height="54dp"
+            android:text="+ Add Card"
             android:textColor="#7F77DD"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textAllCaps="false"
             android:backgroundTint="#162032"
             android:layout_marginTop="12dp"
-            android:layout_marginBottom="12dp"/>
+            android:layout_marginBottom="12dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"/>
 
         <Button
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:text="Save Study Set"
+            android:layout_height="56dp"
+            android:text="💾  Save Study Set"
             android:textColor="#FFFFFF"
+            android:textSize="15sp"
             android:textStyle="bold"
+            android:textAllCaps="false"
             android:backgroundTint="#7F77DD"
-            android:layout_marginBottom="20dp"/>
+            android:insetTop="0dp"
+            android:insetBottom="0dp"/>
 
     </LinearLayout>
 </ScrollView>

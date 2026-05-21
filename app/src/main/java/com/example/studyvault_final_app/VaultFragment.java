@@ -20,6 +20,8 @@ public class VaultFragment extends Fragment {
     private final List<Map<String, Object>> filteredSets = new ArrayList<>();
     private StudySetAdapter adapter;
     private boolean isFirstLoad = true;
+    // Set to true by CreateFragment after a successful save so Vault always refreshes
+    public static boolean pendingRefresh = false;
 
     // FIX #2: Keep references to stat TextViews so they can be updated after load
     private TextView tvTotalSets, tvTotalCards, tvStreakStat, tvStreak;
@@ -75,7 +77,9 @@ public class VaultFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if (isFirstLoad) { isFirstLoad = false; return; }
+        // Always reload if navigated here after a save
         loadStudySets();
+        pendingRefresh = false;
     }
 
     private void loadStudySets() {
